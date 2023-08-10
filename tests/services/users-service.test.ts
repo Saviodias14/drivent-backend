@@ -5,10 +5,12 @@ import faker from "@faker-js/faker";
 import bcrypt from "bcrypt";
 import { createUser as createUserSeed, createEvent as createEventSeed } from "../factories";
 import { cleanDb } from "../helpers";
+import redis from "@/config/redis";
 
 beforeAll(async () => {
   await init();
   await cleanDb();
+  await redis.flushAll();
 });
 
 describe("createUser", () => {
