@@ -10,11 +10,9 @@ async function signIn(params: SignInParams): Promise<SignInResult> {
   const { email, password } = params;
 
   const user = await getUserOrFail(email);
-
   await validatePasswordOrFail(password, user.password);
 
   const token = await createSession(user.id);
-
   return {
     user: exclude(user, "password"),
     token,
@@ -54,6 +52,7 @@ type GetUserOrFailResult = Pick<User, "id" | "email" | "password">;
 
 const authenticationService = {
   signIn,
+  getUserOrFail
 };
 
 export default authenticationService;
