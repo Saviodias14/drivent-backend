@@ -19,29 +19,26 @@ export async function singInPost(req: Request, res: Response) {
 
 export async function gitSignIn(req: Request, res: Response) {
   const code = req.body.code as string;
-  if (!code) return res.status(httpStatus.BAD_REQUEST).send("Missing code");
+  if (!code) return res.status(httpStatus.UNPROCESSABLE_ENTITY).send("Missing code");
 
   try {
     const token = await userService.gitUserToken(code);
-    if (!token) return res.status(httpStatus.UNAUTHORIZED).send("Invalid code");
-
     const gitUser = await userService.gitHubUser(token);
-    if (!gitUser) return res.status(httpStatus.UNAUTHORIZED).send("Invalid code");
-
     const email = gitUser.html_url;
     const password = gitUser.id.toString();
 
     const dbUser = await userRepository.findByEmail(email, { id: true, email: true, password: false });
     if (!dbUser) {
       await userService.createUser({ email, password });
-
-      const result = await authenticationService.signIn({ email, password });
-      return res.status(httpStatus.OK).send(result);
     }
     const result = await authenticationService.signIn({ email, password });
 
     return res.status(httpStatus.OK).send(result);
   } catch (error) {
+    if(error.message === "UNAUTHORIZED"){
+      //invalid code
+      return res.status(httpStatus.UNAUTHORIZED).send({});
+    }
     return res.status(httpStatus.UNAUTHORIZED).send({});
   }
 }

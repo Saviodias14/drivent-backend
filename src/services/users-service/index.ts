@@ -43,21 +43,21 @@ type AuthParams = {
 };
 
 async function gitUserToken(code: string) {
-  const GITHUB_ACESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+  const acess = process.env.GITHUB_ACESS_TOKEN_URL;
   const AuthParams: AuthParams = {
     code,
     grant_type: "authorization_code",
-    redirect_uri: process.env.GITHUB_REDIRECT_URI || "http://localhost:3000/sign-in",
-    client_id: process.env.GITHUB_CLIENT_ID || "b6f11093042790df58f4",
-    client_secret: process.env.GITHUB_CLIENT_SECRET || "72faa3a3104131275183feba62a4fd58b726b3d3",
+    redirect_uri: process.env.GITHUB_REDIRECT_URI,
+    client_id: process.env.GIT_CLIENT_ID,
+    client_secret: process.env.GIT_CLIENT_SECRET,
   };
 
-  const { data } = await axios.post(GITHUB_ACESS_TOKEN_URL, AuthParams, {
+  const { data } = await axios.post(acess, AuthParams, {
     headers: {
       "content-type": "application/json",
     },
   });
-  if (!data) throw new Error("Invalid code");
+  if (!data) throw new Error("UNAUTHORIZED");
 
   const params = new URLSearchParams(data);
   const access_token = params.get("access_token");
@@ -72,7 +72,7 @@ export async function gitHubUser(token: string) {
     },
   });
 
-  if (!response.data) throw new Error("Invalid token");
+  if (!response.data) throw new Error("UNAUTHORIZED");
   return response.data;
 }
 
