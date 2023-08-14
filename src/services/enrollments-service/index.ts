@@ -5,6 +5,7 @@ import addressRepository, { CreateAddressParams } from "@/repositories/address-r
 import enrollmentRepository, { CreateEnrollmentParams } from "@/repositories/enrollment-repository";
 import { exclude } from "@/utils/prisma-utils";
 import { Address, Enrollment } from "@prisma/client";
+import { type } from "os";
 
 async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
   const result = await getAddress(cep);
@@ -31,9 +32,12 @@ async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
 
   return address;
 }
-
+type EnrollmentWithAddressType = Enrollment & {
+  Address: Address[];
+}
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
-  const enrollmentWithAddress = await enrollmentRepository.findWithAddressByUserId(userId);
+  const enrollmentWithAddress: EnrollmentWithAddressType = await enrollmentRepository.findWithAddressByUserId(userId);
+
 
   if (!enrollmentWithAddress) throw notFoundError();
 
