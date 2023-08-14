@@ -29,9 +29,6 @@ export async function gitSignIn(req: Request, res: Response) {
     const dbUser = await userRepository.findByEmail(email, { id: true, email: true, password: false } );
     if (!dbUser){
       await userService.createUser({ email, password });
-
-      const result = await authenticationService.signIn({ email, password });
-      return res.status(httpStatus.OK).send(result);
     }
     const result = await authenticationService.signIn({ email, password });
 

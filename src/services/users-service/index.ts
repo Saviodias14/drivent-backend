@@ -1,4 +1,4 @@
-import { cannotEnrollBeforeStartDateError } from "@/errors";
+import { cannotEnrollBeforeStartDateError, requestError } from "@/errors";
 import userRepository from "@/repositories/user-repository";
 import { User } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -55,7 +55,7 @@ async function gitUserToken(code: string){
       "content-type": "application/json",
     },
   });
-  
+  if (!data) requestError(404, 'Not Found')
   const params = new URLSearchParams(data);
   const access_token = params.get('access_token');
   return access_token;
@@ -70,6 +70,7 @@ export async function gitHubUser(token: string) {
       Authorization: `Bearer ${token}`
     }
   });
+  if(!response.data) throw requestError(403, 'Forbidden')
   return response.data;
 }
 
