@@ -48,6 +48,8 @@ async function getTicketSummary(userId: number){
   if(!checkEnrollment) throw notFoundError()
 
   const result =  await ticketRepository.getTicketSummary(userId)
+  
+  if(!result.Ticket[0].TicketType) notFoundError()
 
   return result
 }
