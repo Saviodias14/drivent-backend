@@ -9,7 +9,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export async function createUser({ email, password }: CreateUserParams): Promise<User> {
-  // await canEnrollOrFail();
+  await canEnrollOrFail();
   await validateUniqueEmailOrFail(email);
   const hashedPassword = await bcrypt.hash(password, 12);
   return userRepository.create({
@@ -17,6 +17,8 @@ export async function createUser({ email, password }: CreateUserParams): Promise
     password: hashedPassword,
   });
 }
+
+export type CreateUserParams = Pick<User, "email" | "password">;
 
 async function validateUniqueEmailOrFail(email: string) {
   const userWithSameEmail = await userRepository.findByEmail(email);
@@ -38,39 +40,39 @@ type AuthParams = {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
-}
+};
 
-async function gitUserToken(code: string){
-  const GITHUB_ACESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+async function gitUserToken(code: string) {
+  const acess = process.env.GITHUB_ACESS_TOKEN_URL;
   const AuthParams: AuthParams = {
     code,
     grant_type: "authorization_code",
-    redirect_uri: process.env.GITHUB_REDIRECT_URI || "http://localhost:3000/sign-in",
-    client_id: process.env.GITHUB_CLIENT_ID || "b6f11093042790df58f4",
-    client_secret: process.env.GITHUB_CLIENT_SECRET || "72faa3a3104131275183feba62a4fd58b726b3d3",
-  }
+    redirect_uri: process.env.GITHUB_REDIRECT_URI,
+    client_id: process.env.GIT_CLIENT_ID,
+    client_secret: process.env.GIT_CLIENT_SECRET,
+  };
 
-  const { data } = await axios.post(GITHUB_ACESS_TOKEN_URL, AuthParams, {
+  const { data } = await axios.post(acess, AuthParams, {
     headers: {
       "content-type": "application/json",
     },
   });
-  if (!data) requestError(404, 'Not Found')
+  if (!data) throw new Error("UNAUTHORIZED");
+
   const params = new URLSearchParams(data);
-  const access_token = params.get('access_token');
+  const access_token = params.get("access_token");
   return access_token;
 }
-
-export type CreateUserParams = Pick<User, "email" | "password">;
 
 export async function gitHubUser(token: string) {
   const GITHUB_USER_URL = "https://api.github.com/user";
   const response = await axios.get(GITHUB_USER_URL, {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
-  if(!response.data) throw requestError(403, 'Forbidden')
+
+  if (!response.data) throw new Error("UNAUTHORIZED");
   return response.data;
 }
 
