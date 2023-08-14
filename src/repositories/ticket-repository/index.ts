@@ -69,9 +69,9 @@ async function getTicketSummary(userId: number){
     where: {
       userId
     },
-    include: {
+    select: {
       Ticket: {
-        include: {
+        select: {
           TicketType: true
         }
       }
